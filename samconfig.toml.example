@@ -4,17 +4,18 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "backup-cleaner-dev"
-s3_bucket = ""  # SAM will create a managed bucket if not specified
-s3_prefix = "backup-cleaner"
-region = "us-east-1"
+s3_bucket = "YOUR_BUCKET_NAME"
+s3_prefix = "backup-cleaner-dev"
+region = "YOUR_REGION"
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-resolve_s3 = true
 
 [dev]
 [dev.deploy]
 [dev.deploy.parameters]
 stack_name = "backup-cleaner-dev"
+s3_bucket = "YOUR_BUCKET_NAME"
+s3_prefix = "backup-cleaner-dev"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=dev"
 
@@ -22,6 +23,8 @@ parameter_overrides = "Environment=dev"
 [prod.deploy]
 [prod.deploy.parameters]
 stack_name = "backup-cleaner-prod"
+s3_bucket = "YOUR_BUCKET_NAME"
+s3_prefix = "backup-cleaner-prod"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=prod"
 

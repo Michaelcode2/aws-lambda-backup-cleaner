@@ -89,10 +89,13 @@ Create a permissions policy file `github-permissions-policy.json`:
         "cloudformation:GetTemplate",
         "cloudformation:ValidateTemplate",
         "cloudformation:CreateChangeSet",
+        "cloudformation:GetTemplateSummary",
         "cloudformation:DescribeChangeSet",
         "cloudformation:ExecuteChangeSet",
         "cloudformation:DeleteChangeSet",
-        "cloudformation:ListStacks"
+        "cloudformation:ListStacks",
+        "cloudformation:TagResource",
+        "cloudformation:UntagResource"
       ],
       "Resource": "*"
     },
@@ -125,15 +128,15 @@ Create a permissions policy file `github-permissions-policy.json`:
         "iam:DetachRolePolicy",
         "iam:PutRolePolicy",
         "iam:DeleteRolePolicy",
-        "iam:GetRolePolicy"
-      ],
+        "iam:GetRolePolicy",
+        "iam:TagRole",
+        "iam:UntagRole"
+    ],
       "Resource": "arn:aws:iam::*:role/backup-cleaner-*"
     },
     {
       "Effect": "Allow",
       "Action": [
-        "s3:CreateBucket",
-        "s3:DeleteBucket",
         "s3:GetObject",
         "s3:PutObject",
         "s3:DeleteObject",
@@ -142,8 +145,8 @@ Create a permissions policy file `github-permissions-policy.json`:
         "s3:GetBucketVersioning"
       ],
       "Resource": [
-        "arn:aws:s3:::aws-sam-cli-*",
-        "arn:aws:s3:::aws-sam-cli-*/*"
+        "arn:aws:s3:::YOUR_SAM_ARTIFACTS_BUCKET",
+        "arn:aws:s3:::YOUR_SAM_ARTIFACTS_BUCKET/*"
       ]
     },
     {
@@ -159,7 +162,9 @@ Create a permissions policy file `github-permissions-policy.json`:
         "logs:CreateLogGroup",
         "logs:DeleteLogGroup",
         "logs:PutRetentionPolicy",
-        "logs:DescribeLogGroups"
+        "logs:DescribeLogGroups",
+        "logs:TagResource",
+        "logs:UntagResource"
       ],
       "Resource": "*"
     },
@@ -170,7 +175,10 @@ Create a permissions policy file `github-permissions-policy.json`:
         "events:DeleteRule",
         "events:DescribeRule",
         "events:PutTargets",
-        "events:RemoveTargets"
+        "events:RemoveTargets",
+        "events:TagResource",
+        "events:UntagResource",
+        "events:ListTagsForResource"
       ],
       "Resource": "*"
     }
@@ -178,7 +186,7 @@ Create a permissions policy file `github-permissions-policy.json`:
 }
 ```
 
-**Important**: Replace `YOUR_CONFIG_BUCKET` with the S3 bucket where you'll store the retention config.
+**Note**: This policy is configured to use the `YOUR-BUCKET` bucket for both SAM artifacts and backup data, organized by prefixes.
 
 Attach the policy:
 
@@ -200,16 +208,19 @@ aws iam get-role \
 
 Save this ARN - you'll need it for GitHub secrets.
 
-### Step 5: Create S3 Bucket for Backups (if not exists)
+### Step 5: Verify S3 Bucket
+
+Ensure your S3 bucket exists:
 
 ```bash
-# Create backup bucket
-aws s3 mb s3://my-backups-bucket
+# Verify bucket exists
+aws s3 ls s3://your-backups/
 
-# Enable versioning (optional but recommended)
-aws s3api put-bucket-versioning \
-  --bucket my-backups-bucket \
-  --versioning-configuration Status=Enabled
+# The bucket will be organized with prefixes:
+# YOUR-BUCKET/backup-cleaner-dev/      - SAM deployment artifacts for dev
+# YOUR-BUCKET/backup-cleaner-prod/     - SAM deployment artifacts for prod
+# YOUR-BUCKET/database-backups/        - Your actual backup files
+# YOUR-BUCKET/configs/                 - Configuration files
 ```
 
 ### Step 6: Create and Upload Retention Configuration
@@ -236,14 +247,11 @@ Create your `config.json`:
 Upload to S3:
 
 ```bash
-# Create config bucket (or use existing)
-aws s3 mb s3://my-lambda-configs
-
-# Upload config
-aws s3 cp config.json s3://my-lambda-configs/backup-retention-config.json
+# Upload config to YOUR-BUCKET with proper prefix
+aws s3 cp config.json s3://YOUR-BUCKET/configs/backup-retention-config.json
 
 # Verify
-aws s3 ls s3://my-lambda-configs/
+aws s3 ls s3://YOUR-BUCKET/configs/
 ```
 
 ## GitHub Configuration
@@ -257,9 +265,9 @@ Add the following secrets:
 | Secret Name | Value | Example |
 |-------------|-------|---------|
 | `AWS_ROLE_ARN` | ARN from Step 4 | `arn:aws:iam::123456789012:role/GitHubActionsBackupCleaner` |
-| `BACKUP_BUCKET_NAME` | Your backup bucket name | `my-backups-bucket` |
-| `a` | S3 path to config | `s3://my-lambda-configs/backup-retention-config.json` |
-| `SCHEDULE_EXPRESSION` | (Optional) Cron expression | `cron(0 2 * * ? *)` |
+| `SAM_ARTIFACTS_BUCKET` | S3 bucket for SAM artifacts | `YOUR-BUCKET` |
+| `BACKUP_BUCKET_NAME` | Your backup bucket name | `YOUR-BUCKET` |
+| `RETENTION_CONFIG_PATH` | S3 path to config | `s3://YOUR-BUCKET/configs/backup-retention-config.json` |
 
 ### Step 2: Create Environment (Optional)
 
@@ -302,7 +310,17 @@ git push origin main
 
 ### Option 2: Manual Deployment with SAM CLI
 
-1. Install SAM CLI:
+1. Configure SAM (optional for local deployments):
+
+```bash
+# Copy the example config and customize it
+cp samconfig.toml.example samconfig.toml
+
+# Edit samconfig.toml with your bucket name and region
+# Note: samconfig.toml is gitignored for security
+```
+
+2. Install SAM CLI:
 
 ```bash
 # macOS
@@ -315,13 +333,13 @@ pip install aws-sam-cli
 sam --version
 ```
 
-2. Configure AWS credentials:
+3. Configure AWS credentials:
 
 ```bash
 aws configure
 ```
 
-3. Build and deploy:
+4. Build and deploy:
 
 ```bash
 # Validate template

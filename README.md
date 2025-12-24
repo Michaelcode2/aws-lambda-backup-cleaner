@@ -158,7 +158,6 @@ Add the following secrets to your GitHub repository:
 | `AWS_ROLE_ARN` | ARN of the IAM role for OIDC | `arn:aws:iam::123456789012:role/GitHubActionsRole` |
 | `BACKUP_BUCKET_NAME` | Name of S3 bucket with backups | `my-backups-bucket` |
 | `RETENTION_CONFIG_PATH` | S3 path or JSON config | `s3://my-config-bucket/config.json` |
-| `SCHEDULE_EXPRESSION` | (Optional) CloudWatch cron expression | `cron(0 2 * * ? *)` |
 
 ### 3. Upload Retention Configuration to S3
 

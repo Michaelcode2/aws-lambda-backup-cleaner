@@ -66,13 +66,14 @@ jobs:
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --stack-name backup-cleaner-${ENVIRONMENT} \
+            --s3-bucket ${{ secrets.SAM_ARTIFACTS_BUCKET }} \
+            --s3-prefix backup-cleaner-${ENVIRONMENT} \
             --capabilities CAPABILITY_IAM \
             --region ${{ env.AWS_REGION }} \
             --parameter-overrides \
               Environment=${ENVIRONMENT} \
               BucketName=${{ secrets.BACKUP_BUCKET_NAME }} \
               RetentionConfigPath=${{ secrets.RETENTION_CONFIG_PATH }} \
-              ScheduleExpression="${{ secrets.SCHEDULE_EXPRESSION || 'cron(0 2 * * ? *)' }}" \
             --tags \
               Environment=${ENVIRONMENT} \
               Project=backup-cleaner \
