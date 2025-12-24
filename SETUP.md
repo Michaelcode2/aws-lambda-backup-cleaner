@@ -89,6 +89,7 @@ Create a permissions policy file `github-permissions-policy.json`:
         "cloudformation:GetTemplate",
         "cloudformation:ValidateTemplate",
         "cloudformation:CreateChangeSet",
+        "cloudformation:GetTemplateSummary",
         "cloudformation:DescribeChangeSet",
         "cloudformation:ExecuteChangeSet",
         "cloudformation:DeleteChangeSet",
@@ -159,7 +160,9 @@ Create a permissions policy file `github-permissions-policy.json`:
         "logs:CreateLogGroup",
         "logs:DeleteLogGroup",
         "logs:PutRetentionPolicy",
-        "logs:DescribeLogGroups"
+        "logs:DescribeLogGroups",
+        "logs:TagResource",
+        "logs:UntagResource"
       ],
       "Resource": "*"
     },
