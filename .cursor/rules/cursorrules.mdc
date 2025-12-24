@@ -1,0 +1,112 @@
+# AWS Lambda Backup Cleaner - Cursor Rules
+
+## Project Overview
+This repository contains an AWS Lambda function designed to automatically delete old backups stored in an S3 bucket. Each backup has its own folder in the S3 bucket and its own retention configuration (how many backups to keep and how old backups to delete). Retention configuration preserves of deleting all backups if new backups were not created or uploaded.
+
+## Technology Stack
+- **Language**: Python 3.x
+- **AWS SDK**: boto3
+- **Infrastructure as Code**: AWS CloudFormation
+- **SAM (Serverless Application Model)**: Used for templating, local testing, and deployment
+- **CI/CD**: GitHub Actions/Workflows for automated deployment
+
+## Architecture Principles
+
+### S3 Backup Structure
+- Each backup has its own folder/prefix in the S3 bucket
+- Each backup folder has its own retention configuration
+- Retention configuration specifies:
+  - How many backups to keep
+  - Which backups to delete (based on age and/or count)
+
+### Lambda Function Design
+- Use Python 3.x (preferably 3.9 or later for better boto3 support)
+- Leverage boto3 for all AWS service interactions
+- Implement proper error handling and logging
+- Use environment variables for configuration
+- Follow AWS Lambda best practices (timeout, memory, error handling)
+
+### SAM Template Structure
+- Use `template.yaml` or `template.yml` for SAM template
+- Define Lambda function with appropriate IAM permissions
+- Configure S3 bucket access permissions
+- Set up CloudWatch Logs for monitoring
+- Use SAM CLI for local testing (`sam local invoke`, `sam local start-api`)
+- Use SAM CLI for deployment (`sam deploy`)
+
+### Deployment Process
+- CloudFormation deployment via GitHub pipeline
+- Use SAM CLI command in CI/CD pipeline:
+  - `sam deploy` - Deploy to AWS (Python code is deployed directly, no build/package needed)
+- Ensure proper IAM roles and permissions are configured
+- Use parameter store or environment variables for sensitive configuration
+
+## Coding Standards
+
+### Python Code Style
+- Follow PEP 8 style guidelines
+- Use type hints where appropriate
+- Include docstrings for functions and classes
+- Use meaningful variable and function names
+- Handle exceptions explicitly with proper error messages
+- Use logging module instead of print statements
+
+### boto3 Best Practices
+- Use boto3 client/resource appropriately
+- Implement retry logic with exponential backoff for transient errors
+- Use pagination for large result sets
+- Handle AWS service exceptions (ClientError, etc.)
+- Use boto3 stubs for local testing when possible
+
+### Error Handling
+- Log all errors with appropriate context
+- Return meaningful error messages
+- Handle S3 access errors gracefully
+- Validate input parameters
+- Handle missing or malformed retention configurations
+
+### Logging
+- Use Python's `logging` module
+- Log at appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- Include context in log messages (backup folder, retention config, etc.)
+- Structure logs for CloudWatch Logs Insights queries
+
+### Modification
+- When modifying the code use minimum changes to prevent large project modification
+
+## File Structure Recommendations
+```
+.
+├── template.yaml          # SAM template
+├── src/
+│   └── lambda_function.py # Main Lambda handler
+├── tests/                 # Unit tests
+├── .github/
+│   └── workflows/         # GitHub Actions workflows
+├── requirements.txt       # Python dependencies
+└── README.md             # Project documentation
+```
+
+## Security Considerations
+- Use IAM roles with least privilege principle
+
+## Retention Configuration Format
+- Define clear format for retention configuration (JSON, YAML, or environment variables)
+- Support flexible retention policies (by count, by age, etc.)
+- Validate retention configuration before processing
+- Document expected configuration format
+
+## When Writing Code
+- Always consider the multi-tenant nature (each backup folder has its own config)
+- Consider edge cases (empty folders, missing configs, etc.)
+
+## When Modifying SAM Template
+- Use CloudFormation parameters for environment-specific values
+- Include proper resource tags
+- Configure appropriate Lambda timeout and memory settings
+
+## When Working with GitHub Pipeline
+- Ensure pipeline uses proper AWS credentials (via secrets)
+- Use `sam deploy` command in the pipeline
+- Validate CloudFormation template before deployment
+- Include rollback strategy for failed deployments
