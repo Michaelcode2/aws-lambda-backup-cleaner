@@ -93,7 +93,9 @@ Create a permissions policy file `github-permissions-policy.json`:
         "cloudformation:DescribeChangeSet",
         "cloudformation:ExecuteChangeSet",
         "cloudformation:DeleteChangeSet",
-        "cloudformation:ListStacks"
+        "cloudformation:ListStacks",
+        "cloudformation:TagResource",
+        "cloudformation:UntagResource"
       ],
       "Resource": "*"
     },
@@ -173,7 +175,10 @@ Create a permissions policy file `github-permissions-policy.json`:
         "events:DeleteRule",
         "events:DescribeRule",
         "events:PutTargets",
-        "events:RemoveTargets"
+        "events:RemoveTargets",
+        "events:TagResource",
+        "events:UntagResource",
+        "events:ListTagsForResource"
       ],
       "Resource": "*"
     }
