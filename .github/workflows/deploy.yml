@@ -30,22 +30,8 @@ jobs:
     name: Deploy to AWS
     runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        include:
-          - branch: develop
-            environment: dev
-          - branch: main
-            environment: prod
-    
-    # Only run if branch matches or it's a manual trigger
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.ref == 'refs/heads/main' && matrix.branch == 'main') ||
-      (github.ref == 'refs/heads/develop' && matrix.branch == 'develop')
-    
     environment:
-      name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+      name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
     
     steps:
       - name: Checkout code
@@ -74,7 +60,7 @@ jobs:
       
       - name: Deploy with SAM
         env:
-          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
         run: |
           sam deploy \
             --no-confirm-changeset \
@@ -101,7 +87,7 @@ jobs:
             --output text)
           echo "function_name=${FUNCTION_NAME}" >> $GITHUB_OUTPUT
         env:
-          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
       
       - name: Deployment summary
         run: |
@@ -113,5 +99,5 @@ jobs:
           echo "- **Function Name**: ${{ steps.lambda-info.outputs.function_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Bucket**: ${{ secrets.BACKUP_BUCKET_NAME }}" >> $GITHUB_STEP_SUMMARY
         env:
-          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
 
