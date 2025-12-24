@@ -258,7 +258,7 @@ Add the following secrets:
 |-------------|-------|---------|
 | `AWS_ROLE_ARN` | ARN from Step 4 | `arn:aws:iam::123456789012:role/GitHubActionsBackupCleaner` |
 | `BACKUP_BUCKET_NAME` | Your backup bucket name | `my-backups-bucket` |
-| `RETENTION_CONFIG_PATH` | S3 path to config | `s3://my-lambda-configs/backup-retention-config.json` |
+| `a` | S3 path to config | `s3://my-lambda-configs/backup-retention-config.json` |
 | `SCHEDULE_EXPRESSION` | (Optional) Cron expression | `cron(0 2 * * ? *)` |
 
 ### Step 2: Create Environment (Optional)
