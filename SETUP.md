@@ -176,7 +176,7 @@ Create a permissions policy file `github-permissions-policy.json`:
 }
 ```
 
-**Note**: This policy is configured to use the `intellect-backups` bucket for both SAM artifacts and backup data, organized by prefixes.
+**Note**: This policy is configured to use the `YOUR-BUCKET` bucket for both SAM artifacts and backup data, organized by prefixes.
 
 Attach the policy:
 
@@ -207,10 +207,10 @@ Ensure your S3 bucket exists:
 aws s3 ls s3://your-backups/
 
 # The bucket will be organized with prefixes:
-# intellect-backups/backup-cleaner-dev/      - SAM deployment artifacts for dev
-# intellect-backups/backup-cleaner-prod/     - SAM deployment artifacts for prod
-# intellect-backups/database-backups/        - Your actual backup files
-# intellect-backups/configs/                 - Configuration files
+# YOUR-BUCKET/backup-cleaner-dev/      - SAM deployment artifacts for dev
+# YOUR-BUCKET/backup-cleaner-prod/     - SAM deployment artifacts for prod
+# YOUR-BUCKET/database-backups/        - Your actual backup files
+# YOUR-BUCKET/configs/                 - Configuration files
 ```
 
 ### Step 6: Create and Upload Retention Configuration
@@ -237,11 +237,11 @@ Create your `config.json`:
 Upload to S3:
 
 ```bash
-# Upload config to intellect-backups with proper prefix
-aws s3 cp config.json s3://intellect-backups/configs/backup-retention-config.json
+# Upload config to YOUR-BUCKET with proper prefix
+aws s3 cp config.json s3://YOUR-BUCKET/configs/backup-retention-config.json
 
 # Verify
-aws s3 ls s3://intellect-backups/configs/
+aws s3 ls s3://YOUR-BUCKET/configs/
 ```
 
 ## GitHub Configuration
@@ -255,9 +255,9 @@ Add the following secrets:
 | Secret Name | Value | Example |
 |-------------|-------|---------|
 | `AWS_ROLE_ARN` | ARN from Step 4 | `arn:aws:iam::123456789012:role/GitHubActionsBackupCleaner` |
-| `SAM_ARTIFACTS_BUCKET` | S3 bucket for SAM artifacts | `intellect-backups` |
-| `BACKUP_BUCKET_NAME` | Your backup bucket name | `intellect-backups` |
-| `RETENTION_CONFIG_PATH` | S3 path to config | `s3://intellect-backups/configs/backup-retention-config.json` |
+| `SAM_ARTIFACTS_BUCKET` | S3 bucket for SAM artifacts | `YOUR-BUCKET` |
+| `BACKUP_BUCKET_NAME` | Your backup bucket name | `YOUR-BUCKET` |
+| `RETENTION_CONFIG_PATH` | S3 path to config | `s3://YOUR-BUCKET/configs/backup-retention-config.json` |
 | `SCHEDULE_EXPRESSION` | (Optional) Cron expression | `cron(0 2 * * ? *)` |
 
 ### Step 2: Create Environment (Optional)
