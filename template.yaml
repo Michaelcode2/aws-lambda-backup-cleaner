@@ -6,12 +6,12 @@ Parameters:
   BucketName:
     Type: String
     Description: Name of the S3 bucket containing backups
-    Default: ''
+    MinLength: 1
   
   RetentionConfigPath:
     Type: String
     Description: S3 path to retention config (s3://bucket/key) or JSON string
-    Default: ''
+    MinLength: 1
   
   ScheduleExpression:
     Type: String
