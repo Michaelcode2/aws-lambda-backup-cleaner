@@ -26,6 +26,7 @@ venv.bak/
 # AWS SAM
 .aws-sam/
 samconfig.toml.local
+samconfig.toml
 .aws-sam-build-cache/
 
 # Test outputs
