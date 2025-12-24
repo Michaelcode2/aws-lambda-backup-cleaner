@@ -74,7 +74,7 @@ jobs:
               Environment=${ENVIRONMENT} \
               BucketName=${{ secrets.BACKUP_BUCKET_NAME }} \
               RetentionConfigPath=${{ secrets.RETENTION_CONFIG_PATH }} \
-              ScheduleExpression="${{ secrets.SCHEDULE_EXPRESSION || 'cron(0 2 ? * 7 *)' }}" \
+              ScheduleExpression="${{ secrets.SCHEDULE_EXPRESSION || 'cron(0 2 ? * 0 *)' }}" \
             --tags \
               Environment=${ENVIRONMENT} \
               Project=backup-cleaner \
