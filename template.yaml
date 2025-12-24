@@ -16,7 +16,7 @@ Parameters:
   ScheduleExpression:
     Type: String
     Description: CloudWatch Events schedule expression for Lambda execution
-    Default: cron(0 2 ? * 0 *)  # Sunday at 2 AM UTC
+    Default: cron(0 2 ? * WED,SAT *)  # Wednsday,Saturday at 2 AM UTC
   
   Environment:
     Type: String

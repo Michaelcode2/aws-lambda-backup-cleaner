@@ -263,7 +263,6 @@ Add the following secrets:
 | `SAM_ARTIFACTS_BUCKET` | S3 bucket for SAM artifacts | `YOUR-BUCKET` |
 | `BACKUP_BUCKET_NAME` | Your backup bucket name | `YOUR-BUCKET` |
 | `RETENTION_CONFIG_PATH` | S3 path to config | `s3://YOUR-BUCKET/configs/backup-retention-config.json` |
-| `SCHEDULE_EXPRESSION` | (Optional) Cron expression | `cron(0 2 * * ? *)` |
 
 ### Step 2: Create Environment (Optional)
 
