@@ -1,0 +1,117 @@
+name: Deploy Lambda Backup Cleaner
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: 'dev'
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read
+
+env:
+  AWS_REGION: eu-central-1
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        include:
+          - branch: develop
+            environment: dev
+          - branch: main
+            environment: prod
+    
+    # Only run if branch matches or it's a manual trigger
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.ref == 'refs/heads/main' && matrix.branch == 'main') ||
+      (github.ref == 'refs/heads/develop' && matrix.branch == 'develop')
+    
+    environment:
+      name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-${{ github.run_id }}
+      
+      - name: Validate SAM template
+        run: |
+          sam validate --lint
+      
+      - name: Deploy with SAM
+        env:
+          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+        run: |
+          sam deploy \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --stack-name backup-cleaner-${ENVIRONMENT} \
+            --capabilities CAPABILITY_IAM \
+            --region ${{ env.AWS_REGION }} \
+            --parameter-overrides \
+              Environment=${ENVIRONMENT} \
+              BucketName=${{ secrets.BACKUP_BUCKET_NAME }} \
+              RetentionConfigPath=${{ secrets.RETENTION_CONFIG_PATH }} \
+              ScheduleExpression="${{ secrets.SCHEDULE_EXPRESSION || 'cron(0 2 * * ? *)' }}" \
+            --tags \
+              Environment=${ENVIRONMENT} \
+              Project=backup-cleaner \
+              ManagedBy=GitHub-Actions
+      
+      - name: Get Lambda function name
+        id: lambda-info
+        run: |
+          FUNCTION_NAME=$(aws cloudformation describe-stacks \
+            --stack-name backup-cleaner-${ENVIRONMENT} \
+            --query "Stacks[0].Outputs[?OutputKey=='BackupCleanerFunctionName'].OutputValue" \
+            --output text)
+          echo "function_name=${FUNCTION_NAME}" >> $GITHUB_OUTPUT
+        env:
+          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+      
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${ENVIRONMENT}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Stack Name**: backup-cleaner-${ENVIRONMENT}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Function Name**: ${{ steps.lambda-info.outputs.function_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bucket**: ${{ secrets.BACKUP_BUCKET_NAME }}" >> $GITHUB_STEP_SUMMARY
+        env:
+          ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || matrix.environment }}
+

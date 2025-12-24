@@ -1,0 +1,25 @@
+{
+  "retention_policies": [
+    {
+      "folder": "database-backups/production/",
+      "days_to_keep": 30,
+      "min_backups_to_keep": 7
+    },
+    {
+      "folder": "database-backups/staging/",
+      "days_to_keep": 14,
+      "min_backups_to_keep": 5
+    },
+    {
+      "folder": "application-backups/prod/",
+      "days_to_keep": 60,
+      "min_backups_to_keep": 10
+    },
+    {
+      "folder": "logs-backups/",
+      "days_to_keep": 7,
+      "min_backups_to_keep": 3
+    }
+  ]
+}
+
