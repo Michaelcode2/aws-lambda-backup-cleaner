@@ -125,8 +125,10 @@ Create a permissions policy file `github-permissions-policy.json`:
         "iam:DetachRolePolicy",
         "iam:PutRolePolicy",
         "iam:DeleteRolePolicy",
-        "iam:GetRolePolicy"
-      ],
+        "iam:GetRolePolicy",
+        "iam:TagRole",
+        "iam:UntagRole"
+    ],
       "Resource": "arn:aws:iam::*:role/backup-cleaner-*"
     },
     {
